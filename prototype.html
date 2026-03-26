@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A/B Analytics — Оптимизация конверсии каталога</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --brand-50:#EEF2FF; --brand-100:#E0E7FF; --brand-200:#C7D2FE;
+  --brand-300:#A5B4FC; --brand-400:#818CF8; --brand-500:#6366F1;
+  --brand-600:#4F46E5; --brand-700:#4338CA;
+
+  --g25:#FCFCFD; --g50:#F9FAFB; --g100:#F2F4F7; --g200:#EAECF0;
+  --g300:#D0D5DD; --g400:#98A2B3; --g500:#667085; --g600:#475467;
+  --g700:#344054; --g800:#1D2939; --g900:#101828;
+
+  --ok50:#ECFDF3;  --ok500:#12B76A; --ok700:#027A48;
+  --err50:#FEF3F2; --err500:#F04438; --err700:#B42318;
+  --warn50:#FFFAEB; --warn500:#F79009;
+
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+
+  --gc:var(--brand-500); --gt1:#F59E0B; --gt2:#10B981; --gt3:#EF4444;
+
+  --r-sm:6px; --r-md:8px; --r-lg:10px; --r-xl:12px; --r-2xl:16px; --r-full:9999px;
+  --shadow-xs:0 1px 2px rgba(16,24,40,.05);
+  --shadow-sm:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06);
+  --shadow-md:0 4px 8px -2px rgba(16,24,40,.1),0 2px 4px -2px rgba(16,24,40,.06);
+  --shadow-lg:0 12px 16px -4px rgba(16,24,40,.08),0 4px 6px -2px rgba(16,24,40,.03);
+  --shadow-xl:0 20px 24px -4px rgba(16,24,40,.08),0 8px 8px -4px rgba(16,24,40,.03);
+  --dur:150ms; --ease:cubic-bezier(.4,0,.2,1);
+
+  /* Surface tokens */
+  --surface-body:#F9FAFB;
+  --surface-card:#FFFFFF;
+  --surface-nav:rgba(255,255,255,.82);
+  --surface-elevated:#FFFFFF;
+  --surface-subtle:#FCFCFD;
+  --surface-muted:#F2F4F7;
+  --border-primary:#EAECF0;
+  --border-secondary:#F2F4F7;
+  --text-primary:#101828;
+  --text-secondary:#344054;
+  --text-tertiary:#475467;
+  --text-muted:#667085;
+  --text-faint:#98A2B3;
+  --selection-bg:var(--brand-100);
+  --selection-color:var(--brand-700);
+  --scrollbar-thumb:#EAECF0;
+}
+
+/* ============================================================
+   DARK THEME
+   ============================================================ */
+[data-theme="dark"] {
+  --brand-50:#1e1b4b; --brand-100:#1e1b4b; --brand-200:#312e81;
+  --brand-300:#4338CA; --brand-400:#6366F1; --brand-500:#818CF8;
+  --brand-600:#A5B4FC; --brand-700:#C7D2FE;
+
+  --g25:#0f1117; --g50:#131620; --g100:#1a1e2e; --g200:#252a3a;
+  --g300:#333a4d; --g400:#6b7280; --g500:#9ca3af; --g600:#d1d5db;
+  --g700:#e5e7eb; --g800:#f3f4f6; --g900:#f9fafb;
+
+  --ok50:rgba(16,185,129,.12);  --ok500:#34D399; --ok700:#6EE7B7;
+  --err50:rgba(239,68,68,.12); --err500:#F87171; --err700:#FCA5A5;
+  --warn50:rgba(245,158,11,.12); --warn500:#FBBF24;
+
+  --gc:#818CF8; --gt1:#FBBF24; --gt2:#34D399; --gt3:#F87171;
+
+  --shadow-xs:0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 4px 8px -2px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.3);
+  --shadow-lg:0 12px 16px -4px rgba(0,0,0,.3),0 4px 6px -2px rgba(0,0,0,.2);
+  --shadow-xl:0 20px 24px -4px rgba(0,0,0,.4),0 8px 8px -4px rgba(0,0,0,.3);
+
+  --surface-body:#0c0e16;
+  --surface-card:#151822;
+  --surface-nav:rgba(21,24,34,.88);
+  --surface-elevated:#1a1e2e;
+  --surface-subtle:#131620;
+  --surface-muted:#1a1e2e;
+  --border-primary:#252a3a;
+  --border-secondary:#1a1e2e;
+  --text-primary:#f9fafb;
+  --text-secondary:#e5e7eb;
+  --text-tertiary:#d1d5db;
+  --text-muted:#9ca3af;
+  --text-faint:#6b7280;
+  --selection-bg:#312e81;
+  --selection-color:#C7D2FE;
+  --scrollbar-thumb:#333a4d;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body{font-family:var(--font);font-size:14px;color:var(--text-primary);background:var(--surface-body);line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .3s var(--ease),color .3s var(--ease)}
+::selection{background:var(--selection-bg);color:var(--selection-color)}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.shell{min-height:100vh;display:flex;flex-direction:column}
+
+/* ---- TOP NAV ---- */
+.nav{height:52px;background:var(--surface-nav);backdrop-filter:blur(16px) saturate(1.6);border-bottom:1px solid var(--border-primary);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:100;transition:background .3s var(--ease),border-color .3s var(--ease)}
+.nav__logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--text-primary);text-decoration:none}
+.nav__mark{width:26px;height:26px;border-radius:var(--r-md);background:linear-gradient(135deg,var(--brand-500),var(--brand-600));display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;letter-spacing:.02em}
+[data-theme="dark"] .nav__mark{background:linear-gradient(135deg,#6366F1,#818CF8)}
+.nav__crumbs{display:flex;align-items:center;gap:6px;margin-left:16px;font-size:13px;color:var(--text-faint)}
+.nav__crumbs span:last-child{color:var(--text-secondary);font-weight:500}
+.nav__sep{color:var(--g300)}
+.nav__right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ---- Theme Toggle ---- */
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--r-md);border:1px solid var(--border-primary);background:var(--surface-card);cursor:pointer;color:var(--text-muted);transition:all var(--dur) var(--ease)}
+.theme-toggle:hover{background:var(--surface-muted);color:var(--text-primary);border-color:var(--g300)}
+.theme-toggle svg{width:16;height:16;transition:transform .3s var(--ease)}
+.theme-toggle .icon-sun{display:none}
+.theme-toggle .icon-moon{display:block}
+[data-theme="dark"] .theme-toggle .icon-sun{display:block}
+[data-theme="dark"] .theme-toggle .icon-moon{display:none}
+
+/* ---- MAIN ---- */
+.main{flex:1;max-width:1480px;width:100%;margin:0 auto;padding:20px 28px 40px}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{background:var(--surface-card);border:1px solid var(--border-primary);border-radius:var(--r-2xl);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:24px;transition:background .3s var(--ease),border-color .3s var(--ease)}
+.hero__left{display:flex;flex-direction:column;gap:6px}
+.hero__row{display:flex;align-items:center;gap:10px}
+.hero__title{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--text-primary)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 10px 2px 8px;border-radius:var(--r-full);font-size:11px;font-weight:600;line-height:1.7}
+.badge--ok{background:var(--ok50);color:var(--ok700)}
+.badge__dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.hero__meta{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:12px}
+.hero__mi{display:flex;align-items:center;gap:4px}
+.hero__sep{color:var(--g300)}
+
+/* ============================================================
+   BTN
+   ============================================================ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-md);font:500 13px/1.3 var(--font);cursor:pointer;border:1px solid transparent;transition:all var(--dur) var(--ease);outline:none;white-space:nowrap}
+.btn:focus-visible{box-shadow:0 0 0 2px var(--surface-body),0 0 0 4px var(--brand-500)}
+.btn--sec{background:var(--surface-card);color:var(--text-tertiary);border-color:var(--border-primary);box-shadow:var(--shadow-xs)}
+.btn--sec:hover{background:var(--surface-muted);color:var(--text-primary)}
+.btn--ghost{background:transparent;color:var(--text-muted)}
+.btn--ghost:hover{background:var(--surface-muted);color:var(--text-secondary)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--icon{padding:6px}
+
+/* ============================================================
+   STAT CARDS  (summary above table)
+   ============================================================ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--surface-card);border:1px solid var(--border-primary);border-radius:var(--r-xl);padding:14px 16px;display:flex;flex-direction:column;gap:2px;transition:box-shadow var(--dur) var(--ease),background .3s var(--ease),border-color .3s var(--ease)}
+.stat:hover{box-shadow:var(--shadow-md)}
+.stat__label{font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}
+.stat__row{display:flex;align-items:baseline;gap:8px}
+.stat__num{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.stat__delta{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;padding:1px 6px;border-radius:4px}
+.stat__delta--up{background:var(--ok50);color:var(--ok700)}
+.stat__delta--down{background:var(--err50);color:var(--err700)}
+.stat__sub{font-size:11px;color:var(--text-faint)}
+
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar__div{width:1px;height:20px;background:var(--border-primary);margin:0 2px}
+.toolbar__spacer{flex:1;min-width:16px}
+
+/* ---- Search ---- */
+.search{position:relative}
+.search__ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-faint);pointer-events:none}
+.search__in{width:200px;padding:6px 12px 6px 30px;border:1px solid var(--border-primary);border-radius:var(--r-md);font:500 12px/1.5 var(--font);color:var(--text-primary);background:var(--surface-card);outline:none;transition:all var(--dur) var(--ease)}
+.search__in::placeholder{color:var(--text-faint)}
+.search__in:focus{border-color:var(--brand-400);box-shadow:0 0 0 3px rgba(99,102,241,.12);width:260px}
+[data-theme="dark"] .search__in:focus{box-shadow:0 0 0 3px rgba(99,102,241,.25)}
+
+/* ---- View switcher ---- */
+.sw{display:inline-flex;background:var(--surface-muted);border-radius:var(--r-md);padding:3px;gap:2px}
+.sw__b{display:flex;align-items:center;gap:5px;padding:5px 12px;border:none;border-radius:5px;font:500 12px/1 var(--font);color:var(--text-muted);background:transparent;cursor:pointer;transition:all var(--dur) var(--ease)}
+.sw__b:hover{color:var(--text-secondary)}
+.sw__b--on{background:var(--surface-card);color:var(--text-primary);box-shadow:var(--shadow-xs)}
+
+/* ---- Filter btn ---- */
+.fw{position:relative}
+.fb{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--border-primary);border-radius:var(--r-md);background:var(--surface-card);font:500 12px/1.3 var(--font);color:var(--text-muted);cursor:pointer;transition:all var(--dur) var(--ease);box-shadow:var(--shadow-xs);outline:none}
+.fb:hover{border-color:var(--g300);color:var(--text-secondary)}
+.fb--on{border-color:var(--brand-300);background:var(--brand-50);color:var(--brand-600)}
+[data-theme="dark"] .fb--on{border-color:var(--brand-400);background:rgba(99,102,241,.12);color:var(--brand-500)}
+.fb__cnt{min-width:17px;height:17px;padding:0 5px;border-radius:var(--r-full);background:var(--brand-600);color:#fff;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+[data-theme="dark"] .fb__cnt{background:var(--brand-500);color:#0c0e16}
+.fb__caret{transition:transform var(--dur) var(--ease);color:var(--text-faint)}
+.fb--open .fb__caret{transform:rotate(180deg)}
+
+/* ---- Dropdown ---- */
+.dd{position:absolute;top:calc(100% + 6px);left:0;min-width:280px;background:var(--surface-card);border:1px solid var(--border-primary);border-radius:var(--r-xl);box-shadow:var(--shadow-xl);z-index:200;opacity:0;visibility:hidden;transform:translateY(-6px);transition:all 180ms var(--ease)}
+.dd--open{opacity:1;visibility:visible;transform:translateY(0)}
+.dd__h{padding:10px 14px;border-bottom:1px solid var(--border-secondary);display:flex;justify-content:space-between;align-items:center}
+.dd__l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-faint)}
+.dd__r{font:500 12px/1 var(--font);color:var(--brand-600);background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:var(--r-sm)}
+[data-theme="dark"] .dd__r{color:var(--brand-500)}
+.dd__r:hover{background:var(--brand-50)}
+[data-theme="dark"] .dd__r:hover{background:rgba(99,102,241,.12)}
+.dd__b{padding:4px 0;max-height:360px;overflow-y:auto}
+.dd__b::-webkit-scrollbar{width:4px}
+.dd__b::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:var(--r-full)}
+
+/* ---- Checkbox ---- */
+.ck{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background 80ms;user-select:none}
+.ck:hover{background:var(--surface-muted)}
+.ck--ch{padding-left:34px}
+.ck--off{opacity:.4;pointer-events:none}
+.ck__bx{width:16px;height:16px;border:1.5px solid var(--g300);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--dur) var(--ease);background:var(--surface-card)}
+.ck__bx--on{background:var(--brand-600);border-color:var(--brand-600)}
+[data-theme="dark"] .ck__bx--on{background:#6366F1;border-color:#6366F1}
+.ck__bx--mx{background:var(--brand-600);border-color:var(--brand-600)}
+[data-theme="dark"] .ck__bx--mx{background:#6366F1;border-color:#6366F1}
+.ck__bx svg{display:none;color:#fff}
+.ck__bx--on svg,.ck__bx--mx svg{display:block}
+.ck__txt{font-size:13px;color:var(--text-secondary);flex:1}
+.ck__txt--b{font-weight:600}
+.ck__tag{font-size:10px;color:var(--text-faint);background:var(--surface-muted);padding:1px 6px;border-radius:var(--r-full);font-weight:500}
+.ck__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ck__exp{color:var(--text-faint);cursor:pointer;padding:2px;border-radius:var(--r-sm);transition:all var(--dur) var(--ease)}
+.ck__exp:hover{background:var(--surface-muted)}
+.ck__exp--on{transform:rotate(90deg)}
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+.card{background:var(--surface-card);border:1px solid var(--border-primary);border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--shadow-sm);transition:background .3s var(--ease),border-color .3s var(--ease)}
+.card__scroll{overflow-x:auto}
+.card__scroll::-webkit-scrollbar{height:6px}
+.card__scroll::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:var(--r-full)}
+
+/* ============================================================
+   LEGEND BAR (top of compact view)
+   ============================================================ */
+.legend{display:flex;align-items:center;gap:16px;padding:10px 16px;font-size:12px;color:var(--text-muted);background:var(--surface-subtle);border-bottom:1px solid var(--border-secondary)}
+.legend__title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin-right:4px}
+.legend__i{display:flex;align-items:center;gap:5px;font-weight:500}
+.legend__dot{width:8px;height:8px;border-radius:50%}
+.legend--bottom{border-bottom:none;border-top:1px solid var(--border-secondary)}
+
+/* ============================================================
+   TABLE — BASE
+   ============================================================ */
+.tbl{width:100%;border-collapse:collapse;table-layout:auto}
+.tbl th,.tbl td{padding:9px 16px;text-align:left;border-bottom:1px solid var(--border-secondary);font-size:13px;vertical-align:middle;white-space:nowrap}
+.tbl thead th{background:var(--surface-subtle);font-weight:600;font-size:11px;color:var(--text-muted);position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border-primary);padding-top:10px;padding-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.tbl tbody tr{transition:background 80ms}
+
+/* Sticky first column */
+.tbl th:first-child,.tbl td:first-child{position:sticky;left:0;z-index:5;background:inherit}
+.tbl thead th:first-child{z-index:15;background:var(--surface-subtle)}
+
+/* Column widths */
+.tbl__mc{min-width:220px;width:240px}
+.tbl__vc{text-align:right!important;min-width:175px}
+
+/* Group header */
+.tbl__gh td{background:var(--surface-muted);font-weight:700;font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.07em;padding:7px 16px;border-bottom:1px solid var(--border-secondary)}
+.tbl__gh td:first-child{background:var(--surface-muted)}
+
+/* Metric row */
+.tbl__mr td{background:var(--surface-card)}
+.tbl__mr td:first-child{font-weight:500;background:var(--surface-card)}
+.tbl__mr:hover td{background:var(--brand-50)!important}
+[data-theme="dark"] .tbl__mr:hover td{background:rgba(99,102,241,.08)!important}
+
+/* Slice parent label */
+.tbl__sp td{background:var(--surface-subtle)!important;font-weight:600;font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;padding:5px 16px 5px 28px}
+
+/* Slice child row */
+.tbl__sc td{background:var(--surface-card)}
+.tbl__sc td:first-child{padding-left:44px;color:var(--text-muted);font-weight:400;background:var(--surface-card)}
+.tbl__sc:hover td{background:var(--brand-50)!important}
+[data-theme="dark"] .tbl__sc:hover td{background:rgba(99,102,241,.08)!important}
+
+/* ---- Cell: value + delta ---- */
+.val{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.val__n{font-variant-numeric:tabular-nums;font-weight:500;color:var(--text-secondary)}
+.val__d{display:inline-flex;align-items:center;justify-content:center;min-width:56px;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.val__d--up{background:var(--ok50);color:var(--ok700)}
+.val__d--down{background:var(--err50);color:var(--err700)}
+.val__d--flat{background:var(--surface-muted);color:var(--text-muted)}
+
+/* Column header group indicator */
+.th-group{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.th-group__dot{width:8px;height:8px;border-radius:50%}
+.th-group__name{font-size:11px}
+
+/* Expander */
+.exp{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.exp__arr{color:var(--text-faint);transition:transform var(--dur) var(--ease);flex-shrink:0}
+.exp__arr--on{transform:rotate(90deg)}
+
+/* ============================================================
+   COMPACT VIEW — deltas in one cell
+   ============================================================ */
+.compact .tbl th,.compact .tbl td{text-align:center;padding:9px 10px}
+.compact .tbl th:first-child,.compact .tbl td:first-child{text-align:left;padding-left:16px}
+.compact .tbl__sc td:first-child{padding-left:44px}
+
+.dts{display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap;justify-content:center}
+.dt{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.dt--up{background:var(--ok50);color:var(--ok700)}
+.dt--down{background:var(--err50);color:var(--err700)}
+.dt--flat{background:var(--surface-muted);color:var(--text-muted)}
+.dt__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ---- Heatmap bg tinting for compact cells ---- */
+.heat-pos-1{background:rgba(18,183,106,.03)}
+.heat-pos-2{background:rgba(18,183,106,.06)}
+.heat-pos-3{background:rgba(18,183,106,.10)}
+.heat-neg-1{background:rgba(240,68,56,.03)}
+.heat-neg-2{background:rgba(240,68,56,.06)}
+.heat-neg-3{background:rgba(240,68,56,.10)}
+
+[data-theme="dark"] .heat-pos-1{background:rgba(52,211,153,.04)}
+[data-theme="dark"] .heat-pos-2{background:rgba(52,211,153,.08)}
+[data-theme="dark"] .heat-pos-3{background:rgba(52,211,153,.14)}
+[data-theme="dark"] .heat-neg-1{background:rgba(248,113,113,.04)}
+[data-theme="dark"] .heat-neg-2{background:rgba(248,113,113,.08)}
+[data-theme="dark"] .heat-neg-3{background:rgba(248,113,113,.14)}
+
+/* Highlight best delta per row — subtle size + weight */
+.dt--best{font-size:12px;font-weight:800;padding:4px 10px}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer{display:flex;align-items:center;gap:12px;margin-top:20px}
+
+/* ============================================================
+   CHIPS
+   ============================================================ */
+.chips{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 6px 3px 9px;border-radius:var(--r-full);background:var(--brand-50);border:1px solid var(--brand-200);color:var(--brand-600);font-size:11px;font-weight:500}
+[data-theme="dark"] .chip{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.3);color:var(--brand-500)}
+.chip__x{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:none;background:transparent;color:var(--brand-600);font-size:13px;cursor:pointer;padding:0;transition:background 80ms}
+.chip__x:hover{background:var(--brand-100)}
+[data-theme="dark"] .chip__x{color:var(--brand-500)}
+[data-theme="dark"] .chip__x:hover{background:rgba(99,102,241,.2)}
+
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
+.tt{position:relative}
+.tt__tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--g800);color:var(--g25);font-size:11px;font-weight:500;padding:4px 8px;border-radius:var(--r-sm);white-space:nowrap;opacity:0;visibility:hidden;transition:all 120ms;pointer-events:none;z-index:50}
+[data-theme="dark"] .tt__tip{background:var(--g700);color:var(--g25)}
+.tt:hover .tt__tip{opacity:1;visibility:visible}
+
+/* ============================================================
+   ANIM
+   ============================================================ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeUp 300ms var(--ease) both}
+.stat{animation:fadeUp 300ms var(--ease) both}
+.stat:nth-child(1){animation-delay:0ms}
+.stat:nth-child(2){animation-delay:60ms}
+.stat:nth-child(3){animation-delay:120ms}
+.stat:nth-child(4){animation-delay:180ms}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a class="nav__logo" href="#"><span class="nav__mark">AB</span>Platform</a>
+    <div class="nav__crumbs">
+      <svg class="nav__sep" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Эксперименты</span>
+      <svg class="nav__sep" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Оптимизация конверсии каталога</span>
+    </div>
+    <div class="nav__right">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Переключить тему">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 8.5a6 6 0 01-7.5-7.5A6.5 6.5 0 1014 8.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero__left">
+        <div class="hero__row">
+          <h1 class="hero__title">Оптимизация конверсии каталога</h1>
+          <span class="badge badge--ok"><span class="badge__dot"></span>Выполнен</span>
+        </div>
+        <div class="hero__meta">
+          <span class="hero__mi">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            26 июн — 08 июл 2023
+          </span>
+          <span class="hero__sep">·</span>
+          <span class="hero__mi">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3.5l2.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            12 дней
+          </span>
+          <span class="hero__sep">·</span>
+          <span class="hero__mi">4 группы · 7 метрик</span>
+        </div>
+      </div>
+      <button class="btn btn--sec btn--sm">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M10.5 1.5l2 2M2 10l-0.5 2.5L4 12l8.5-8.5-2-2L2 10z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Редактировать
+      </button>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats" id="statsRow"></div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search">
+        <span class="search__ico"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="5.8" cy="5.8" r="4.3" stroke="currentColor" stroke-width="1.3"/><path d="M9.2 9.2l3.3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <input class="search__in" placeholder="Поиск метрики…" id="si" oninput="S.search=this.value;render()">
+      </div>
+      <div class="toolbar__div"></div>
+      <div class="fw" id="fwG"><button class="fb" onclick="openDD('fwG')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="4" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><circle cx="10" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/></svg>Группы<span class="fb__cnt" id="cG" style="display:none"></span><svg class="fb__caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="dd" id="ddG"><div class="dd__h"><span class="dd__l">Группы</span><button class="dd__r" onclick="resetF('g')">Сбросить</button></div><div class="dd__b" id="cbG"></div></div></div>
+      <div class="fw" id="fwM"><button class="fb" onclick="openDD('fwM')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10V6M5 10V4M8 10V7M11 10V2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Метрики<span class="fb__cnt" id="cM" style="display:none"></span><svg class="fb__caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="dd" id="ddM"><div class="dd__h"><span class="dd__l">Метрики</span><button class="dd__r" onclick="resetF('m')">Сбросить</button></div><div class="dd__b" id="cbM"></div></div></div>
+      <div class="fw" id="fwS"><button class="fb" onclick="openDD('fwS')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Срезы<span class="fb__cnt" id="cS" style="display:none"></span><svg class="fb__caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="dd" id="ddS" style="min-width:300px"><div class="dd__h"><span class="dd__l">Срезы</span><button class="dd__r" onclick="resetF('s')">Сбросить</button></div><div class="dd__b" id="cbS"></div></div></div>
+      <div class="toolbar__div"></div>
+      <div class="sw">
+        <button class="sw__b sw__b--on" id="vS" onclick="setView('standard')">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.1"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.1"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.1"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.1"/></svg>Таблица
+        </button>
+        <button class="sw__b" id="vC" onclick="setView('compact')">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="3" rx="1" stroke="currentColor" stroke-width="1.1"/><rect x="1.5" y="6.5" width="11" height="3" rx="1" stroke="currentColor" stroke-width="1.1"/><rect x="1.5" y="11" width="11" height="1.5" rx=".75" stroke="currentColor" stroke-width="1.1"/></svg>Сравнение
+        </button>
+      </div>
+      <div class="toolbar__spacer"></div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card"><div class="card__scroll" id="tRoot"></div></div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <button class="btn btn--sec" onclick="history.back()">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Вернуться к списку
+      </button>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   THEME
+   ============================================================ */
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next==='dark'?'dark':'');
+  if(next!=='dark')html.removeAttribute('data-theme');
+  try{localStorage.setItem('ab-theme',next);}catch(e){}
+}
+// Restore saved theme
+(function(){try{const t=localStorage.getItem('ab-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+
+/* ============================================================
+   DATA
+   ============================================================ */
+const GR=[
+  {id:'control',name:'Контрольная',type:'control',color:'var(--gc)'},
+  {id:'test_1',name:'Тестовая 1',type:'test',color:'var(--gt1)'},
+  {id:'test_2',name:'Тестовая 2',type:'test',color:'var(--gt2)'},
+  {id:'test_3',name:'Тестовая 3',type:'test',color:'var(--gt3)'},
+];
+const SL=[
+  {id:'platform',name:'Платформа приложения',ch:[{id:'ios',name:'iOS'},{id:'android',name:'Android'}]},
+  {id:'region',name:'Регион',ch:[{id:'moscow',name:'Москва'},{id:'spb',name:'Санкт-Петербург'},{id:'other_r',name:'Другие регионы'}]},
+  {id:'subscription',name:'Подписка',ch:[{id:'sub_on',name:'Активная'},{id:'sub_off',name:'Неактивная'}]},
+  {id:'payment',name:'Способ оплаты',ch:[{id:'apple_pay',name:'Apple Pay'},{id:'card',name:'Банковские карты'},{id:'cash',name:'Наличные'}]},
+];
+const MG=[
+  {id:'rev',name:'Выручка',ms:[
+    {id:'purchases',name:'Количество покупок',sl:false,v:{control:1667.45,test_1:{v:1489.45,d:-0.95},test_2:{v:1489.45,d:-0.95},test_3:{v:1489.45,d:-0.95}}},
+    {id:'revenue',name:'Revenue',sl:true,v:{control:544489.45,test_1:{v:537381.14,d:-0.29},test_2:{v:537381.14,d:-0.95},test_3:{v:537381.14,d:-0.95}},sv:{platform:{ios:{control:343385.13,test_1:{v:337141.10,d:-0.29},test_2:{v:394735.94,d:1.04},test_3:{v:337141.10,d:-0.29}},android:{control:204104.32,test_1:{v:200240.04,d:-0.51},test_2:{v:194645.06,d:-0.83},test_3:{v:200240.04,d:-0.29}}},region:{moscow:{control:312e3,test_1:{v:308500,d:-0.34},test_2:{v:315200,d:0.21},test_3:{v:310100,d:-0.18}},spb:{control:142489.45,test_1:{v:140100,d:-0.42},test_2:{v:138900,d:-0.61},test_3:{v:141300,d:-0.22}},other_r:{control:9e4,test_1:{v:88781.14,d:-0.31},test_2:{v:83281.14,d:-1.69},test_3:{v:85714,d:-1.08}}},subscription:{sub_on:{control:412300,test_1:{v:407800,d:-0.29},test_2:{v:409100,d:-0.21},test_3:{v:406500,d:-0.38}},sub_off:{control:132189.45,test_1:{v:129581.14,d:-0.52},test_2:{v:128281.14,d:-0.78},test_3:{v:130614,d:-0.31}}},payment:{apple_pay:{control:198e3,test_1:{v:195200,d:-0.41},test_2:{v:196800,d:-0.18},test_3:{v:194100,d:-0.58}},card:{control:296489.45,test_1:{v:293181.14,d:-0.33},test_2:{v:291581.14,d:-0.49},test_3:{v:294014,d:-0.24}},cash:{control:5e4,test_1:{v:49e3,d:-0.56},test_2:{v:49e3,d:-0.56},test_3:{v:49e3,d:-0.56}}}}},
+    {id:'avg_check',name:'Средний чек',sl:false,v:{control:3049,test_1:{v:5489.45,d:1.94},test_2:{v:5489.45,d:1.94},test_3:{v:5489.45,d:1.94}}},
+  ]},
+  {id:'eng',name:'Вовлечённость',ms:[
+    {id:'psr',name:'Доля сессий с покупкой',sl:false,v:{control:0.11,test_1:{v:0.121,d:1.23},test_2:{v:0.123,d:1.24},test_3:{v:0.117,d:1.11}}},
+    {id:'sessions',name:'Количество сессий',sl:true,v:{control:36669.78,test_1:{v:31669.78,d:-9.99},test_2:{v:31669.78,d:-9.99},test_3:{v:31669.78,d:-9.99}},sv:{platform:{ios:{control:21e3,test_1:{v:18200,d:-10.12},test_2:{v:18500,d:-9.05},test_3:{v:18100,d:-10.38}},android:{control:15669.78,test_1:{v:13469.78,d:-9.8},test_2:{v:13169.78,d:-11.03},test_3:{v:13669.78,d:-8.69}}},region:{moscow:{control:18e3,test_1:{v:15500,d:-9.88},test_2:{v:15600,d:-9.33},test_3:{v:15400,d:-10.44}},spb:{control:10669.78,test_1:{v:9169.78,d:-10.2},test_2:{v:9069.78,d:-10.86},test_3:{v:9269.78,d:-9.52}},other_r:{control:8e3,test_1:{v:7e3,d:-9.89},test_2:{v:7e3,d:-9.89},test_3:{v:7e3,d:-9.89}}},subscription:{sub_on:{control:28e3,test_1:{v:24200,d:-9.92},test_2:{v:24100,d:-10.18},test_3:{v:24300,d:-9.64}},sub_off:{control:8669.78,test_1:{v:7469.78,d:-10.14},test_2:{v:7569.78,d:-9.46},test_3:{v:7369.78,d:-10.83}}},payment:{apple_pay:{control:12e3,test_1:{v:10400,d:-9.88},test_2:{v:10300,d:-10.5},test_3:{v:10500,d:-9.25}},card:{control:20669.78,test_1:{v:17869.78,d:-10.05},test_2:{v:17969.78,d:-9.62},test_3:{v:17769.78,d:-10.48}},cash:{control:4e3,test_1:{v:3400,d:-10.08},test_2:{v:3400,d:-10.08},test_3:{v:3400,d:-10.08}}}}},
+    {id:'ppu',name:'Товаров на пользователя',sl:false,v:{control:4.2,test_1:{v:6.45,d:6.99},test_2:{v:3.41,d:-1.23},test_3:{v:4.22,d:0.1}}},
+    {id:'sdur',name:'Средняя длительность сессии',sl:false,v:{control:3049,test_1:{v:5489.45,d:1.94},test_2:{v:5489.45,d:1.94},test_3:{v:5489.45,d:1.94}}},
+  ]},
+];
+
+/* ---- STATE ---- */
+const S={
+  view:'standard',
+  groups:new Set(GR.map(g=>g.id)),
+  metrics:new Set(MG.flatMap(g=>g.ms.map(m=>m.id))),
+  slices:new Set(['__all',...SL.map(s=>s.id),...SL.flatMap(s=>s.ch.map(c=>c.id))]),
+  expanded:new Set(['revenue','sessions']),
+  slExp:new Set(SL.map(s=>s.id)),
+  search:'',
+};
+
+/* ---- HELPERS ---- */
+const fmt=n=>{if(n==null)return'—';if(Math.abs(n)<1&&n!==0)return n.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:3});return n.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});};
+const dc=d=>d>0?'up':d<0?'down':'flat';
+const fd=d=>(d>0?'+':'')+d.toFixed(2).replace('.',',')+'%';
+const CI=`<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const MI=`<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 5h5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+const vG=()=>GR.filter(g=>S.groups.has(g.id));
+const vT=()=>vG().filter(g=>g.type==='test');
+const vMG=()=>MG.map(mg=>({...mg,ms:mg.ms.filter(m=>{if(!S.metrics.has(m.id))return false;if(S.search)return m.name.toLowerCase().includes(S.search.toLowerCase());return true;})})).filter(mg=>mg.ms.length>0);
+const vSL=()=>{if(S.slices.has('__all'))return SL;return SL.map(s=>({...s,ch:s.ch.filter(c=>S.slices.has(c.id))})).filter(s=>S.slices.has(s.id)||s.ch.length>0);};
+
+// heatmap class for delta
+function heatCls(d){
+  const a=Math.abs(d);
+  if(d>0)return a>5?'heat-pos-3':a>1?'heat-pos-2':a>0?'heat-pos-1':'';
+  if(d<0)return a>5?'heat-neg-3':a>1?'heat-neg-2':a>0?'heat-neg-1':'';
+  return '';
+}
+
+/* ---- DROPDOWN ---- */
+let openId=null;
+let ddLock=false; // prevents close during checkbox re-render
+function openDD(id){if(openId===id){closeDD();return;}closeDD();const w=document.getElementById(id);w.querySelector('.dd').classList.add('dd--open');w.querySelector('.fb').classList.add('fb--open');openId=id;}
+function closeDD(){document.querySelectorAll('.dd').forEach(d=>d.classList.remove('dd--open'));document.querySelectorAll('.fb').forEach(b=>b.classList.remove('fb--open'));openId=null;}
+function withLock(fn){return function(){ddLock=true;fn.apply(this,arguments);requestAnimationFrame(()=>{ddLock=false;});};}
+document.addEventListener('click',e=>{if(ddLock)return;if(openId&&!e.target.closest('.fw'))closeDD();});
+
+/* ---- CHECKBOXES ---- */
+function renderCBG(){
+  document.getElementById('cbG').innerHTML=GR.map(g=>{
+    const on=S.groups.has(g.id),ct=g.type==='control';
+    return `<div class="ck ${ct?'ck--off':''}" onclick="${ct?'':'toggleGrp(\''+g.id+'\')'}"><span class="ck__bx ${on?'ck__bx--on':''}">${on?CI:''}</span><span class="ck__dot" style="background:${g.color}"></span><span class="ck__txt">${g.name}</span>${ct?'<span class="ck__tag">обязательная</span>':''}</div>`;
+  }).join('');updCnt();
+}
+function renderCBM(){
+  let h='';MG.forEach(mg=>{
+    const all=mg.ms.every(m=>S.metrics.has(m.id)),some=mg.ms.some(m=>S.metrics.has(m.id));
+    h+=`<div class="ck" onclick="toggleMG('${mg.id}')"><span class="ck__bx ${all?'ck__bx--on':some?'ck__bx--mx':''}">${all?CI:some?MI:''}</span><span class="ck__txt ck__txt--b">${mg.name}</span></div>`;
+    mg.ms.forEach(m=>{const on=S.metrics.has(m.id);h+=`<div class="ck ck--ch" onclick="toggleM('${m.id}')"><span class="ck__bx ${on?'ck__bx--on':''}">${on?CI:''}</span><span class="ck__txt">${m.name}</span></div>`;});
+  });document.getElementById('cbM').innerHTML=h;updCnt();
+}
+function renderCBS(){
+  const aOn=S.slices.has('__all');
+  let h=`<div class="ck" onclick="tSlAll()"><span class="ck__bx ${aOn?'ck__bx--on':''}">${aOn?CI:''}</span><span class="ck__txt ck__txt--b">Все срезы</span></div>`;
+  SL.forEach(s=>{
+    const cAll=s.ch.every(c=>S.slices.has(c.id)),cSome=s.ch.some(c=>S.slices.has(c.id));
+    const pOn=S.slices.has(s.id)||aOn;
+    const cls=(pOn||cAll)?'ck__bx--on':cSome?'ck__bx--mx':'';
+    const ic=(pOn||cAll)?CI:cSome?MI:'';
+    const ex=S.slExp.has(s.id);
+    h+=`<div class="ck" onclick="tSlP('${s.id}')"><span class="ck__bx ${cls}">${ic}</span><span class="ck__txt ck__txt--b">${s.name}</span><span class="ck__exp ${ex?'ck__exp--on':''}" onclick="event.stopPropagation();tSlExp('${s.id}')"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>`;
+    if(ex)s.ch.forEach(c=>{const on=S.slices.has(c.id)||aOn||S.slices.has(s.id);h+=`<div class="ck ck--ch" onclick="tSlC('${s.id}','${c.id}')"><span class="ck__bx ${on?'ck__bx--on':''}">${on?CI:''}</span><span class="ck__txt">${c.name}</span></div>`;});
+  });document.getElementById('cbS').innerHTML=h;updCnt();
+}
+
+/* ---- FILTER LOGIC (all wrapped with ddLock) ---- */
+var toggleGrp=withLock(function(id){if(S.groups.has(id)){const ts=[...S.groups].filter(i=>GR.find(g=>g.id===i)?.type==='test');if(GR.find(g=>g.id===id)?.type==='test'&&ts.length<=1)return;S.groups.delete(id);}else S.groups.add(id);renderCBG();render();});
+var toggleMG=withLock(function(gid){const mg=MG.find(g=>g.id===gid);if(!mg)return;const all=mg.ms.every(m=>S.metrics.has(m.id));mg.ms.forEach(m=>{if(all)S.metrics.delete(m.id);else S.metrics.add(m.id);});renderCBM();render();});
+var toggleM=withLock(function(id){S.metrics.has(id)?S.metrics.delete(id):S.metrics.add(id);renderCBM();render();});
+var tSlAll=withLock(function(){if(S.slices.has('__all'))S.slices.clear();else{S.slices.clear();S.slices.add('__all');SL.forEach(s=>{S.slices.add(s.id);s.ch.forEach(c=>S.slices.add(c.id));});}renderCBS();render();});
+var tSlP=withLock(function(pid){const sl=SL.find(s=>s.id===pid);if(!sl)return;if(S.slices.has(pid)){S.slices.delete(pid);sl.ch.forEach(c=>S.slices.delete(c.id));}else{S.slices.add(pid);sl.ch.forEach(c=>S.slices.add(c.id));}S.slices.delete('__all');if(SL.flatMap(s=>[s.id,...s.ch.map(c=>c.id)]).every(i=>S.slices.has(i)))S.slices.add('__all');renderCBS();render();});
+var tSlC=withLock(function(pid,cid){const sl=SL.find(s=>s.id===pid);if(!sl)return;if(S.slices.has(cid)){S.slices.delete(cid);S.slices.delete(pid);S.slices.delete('__all');}else{S.slices.add(cid);if(sl.ch.every(c=>S.slices.has(c.id)))S.slices.add(pid);}if(SL.flatMap(s=>[s.id,...s.ch.map(c=>c.id)]).every(i=>S.slices.has(i)))S.slices.add('__all');renderCBS();render();});
+var tSlExp=withLock(function(pid){S.slExp.has(pid)?S.slExp.delete(pid):S.slExp.add(pid);renderCBS();});
+var resetF=withLock(function(t){if(t==='g'){S.groups=new Set(GR.map(g=>g.id));renderCBG();}if(t==='m'){S.metrics=new Set(MG.flatMap(g=>g.ms.map(m=>m.id)));renderCBM();}if(t==='s'){S.slices=new Set(['__all',...SL.map(s=>s.id),...SL.flatMap(s=>s.ch.map(c=>c.id))]);renderCBS();}render();});
+function updCnt(){
+  const gEl=document.getElementById('cG'),gBtn=document.querySelector('#fwG .fb');
+  if(S.groups.size<GR.length){gEl.textContent=S.groups.size;gEl.style.display='';gBtn.classList.add('fb--on');}else{gEl.style.display='none';gBtn.classList.remove('fb--on');}
+  const mAll=MG.reduce((s,g)=>s+g.ms.length,0),mEl=document.getElementById('cM'),mBtn=document.querySelector('#fwM .fb');
+  if(S.metrics.size<mAll){mEl.textContent=S.metrics.size;mEl.style.display='';mBtn.classList.add('fb--on');}else{mEl.style.display='none';mBtn.classList.remove('fb--on');}
+  const sEl=document.getElementById('cS'),sBtn=document.querySelector('#fwS .fb');
+  if(!S.slices.has('__all')){const c=[...S.slices].filter(i=>SL.some(s=>s.id===i)).length;sEl.textContent=c;sEl.style.display=c?'':'none';sBtn.classList.add('fb--on');}else{sEl.style.display='none';sBtn.classList.remove('fb--on');}
+}
+
+/* ---- VIEW ---- */
+function setView(v){S.view=v;document.getElementById('vS').classList.toggle('sw__b--on',v==='standard');document.getElementById('vC').classList.toggle('sw__b--on',v==='compact');render();}
+
+/* ---- CHIPS ---- */
+function renderChips(){document.getElementById('chips').innerHTML=GR.filter(g=>!S.groups.has(g.id)).map(g=>`<span class="chip">Без: ${g.name}<button class="chip__x" onclick="toggleGrp('${g.id}')">&times;</button></span>`).join('');}
+
+/* ---- EXPAND ---- */
+function toggleExp(id){S.expanded.has(id)?S.expanded.delete(id):S.expanded.add(id);render();}
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+function renderStats(){
+  const ms=vMG().flatMap(g=>g.ms);
+  const tgs=vT();
+  const show=ms.slice(0,4);
+  document.getElementById('statsRow').innerHTML=show.map(m=>{
+    let sum=0,cnt=0;
+    tgs.forEach(g=>{const vl=m.v[g.id];if(vl){sum+=vl.d;cnt++;}});
+    const avg=cnt?sum/cnt:0;
+    return `<div class="stat">
+      <div class="stat__label">${m.name}</div>
+      <div class="stat__row">
+        <span class="stat__num">${fmt(m.v.control)}</span>
+        <span class="stat__delta stat__delta--${dc(avg)}">${fd(avg)}</span>
+      </div>
+      <div class="stat__sub">Контрольная · сред. дельта</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   TABLE — STANDARD
+   ============================================================ */
+function renderStd(){
+  const gs=vG(),tgs=vT(),ctrl=gs.find(g=>g.type==='control'),mgs=vMG(),slcs=vSL();
+  if(!ctrl||!tgs.length)return'<div style="padding:48px;text-align:center;color:var(--text-faint);font-size:13px">Выберите контрольную и хотя бы одну тестовую группу</div>';
+  const cols=1+(ctrl?1:0)+tgs.length;
+  let h=`<table class="tbl"><thead><tr><th class="tbl__mc">Метрики и срезы</th>`;
+  if(ctrl)h+=`<th class="tbl__vc"><span class="th-group" style="justify-content:flex-end"><span class="th-group__dot" style="background:${ctrl.color}"></span><span class="th-group__name">Контрольная</span></span></th>`;
+  tgs.forEach(g=>h+=`<th class="tbl__vc"><span class="th-group" style="justify-content:flex-end"><span class="th-group__dot" style="background:${g.color}"></span><span class="th-group__name">${g.name}</span></span></th>`);
+  h+=`</tr></thead><tbody>`;
+
+  mgs.forEach(mg=>{
+    h+=`<tr class="tbl__gh"><td colspan="${cols}">${mg.name}</td></tr>`;
+    mg.ms.forEach(m=>{
+      const ex=S.expanded.has(m.id),hasSl=m.sl&&m.sv;
+      h+=`<tr class="tbl__mr"><td>`;
+      if(hasSl)h+=`<span class="exp" onclick="toggleExp('${m.id}')"><svg class="exp__arr ${ex?'exp__arr--on':''}" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>${m.name}</span>`;
+      else h+=m.name;
+      h+=`</td>`;
+      if(ctrl)h+=`<td class="tbl__vc"><span class="val"><span class="val__n">${fmt(m.v.control)}</span></span></td>`;
+      tgs.forEach(g=>{const vl=m.v[g.id];h+=vl?`<td class="tbl__vc"><span class="val"><span class="val__n">${fmt(vl.v)}</span><span class="val__d val__d--${dc(vl.d)}">${fd(vl.d)}</span></span></td>`:`<td class="tbl__vc">—</td>`;});
+      h+=`</tr>`;
+      if(hasSl&&ex)slcs.forEach(sl=>{
+        if(!m.sv[sl.id])return;
+        h+=`<tr class="tbl__sp"><td colspan="${cols}">${sl.name}</td></tr>`;
+        sl.ch.forEach(ch=>{
+          if(!S.slices.has(ch.id)&&!S.slices.has('__all')&&!S.slices.has(sl.id))return;
+          const sd=m.sv[sl.id]?.[ch.id];if(!sd)return;
+          h+=`<tr class="tbl__sc"><td>${ch.name}</td>`;
+          if(ctrl)h+=`<td class="tbl__vc"><span class="val"><span class="val__n">${fmt(sd.control)}</span></span></td>`;
+          tgs.forEach(g=>{const vl=sd[g.id];h+=vl?`<td class="tbl__vc"><span class="val"><span class="val__n">${fmt(vl.v)}</span><span class="val__d val__d--${dc(vl.d)}">${fd(vl.d)}</span></span></td>`:`<td class="tbl__vc">—</td>`;});
+          h+=`</tr>`;
+        });
+      });
+    });
+  });
+  h+=`</tbody></table>`;return h;
+}
+
+/* ============================================================
+   TABLE — COMPACT (legend on top + heatmap + best/worst)
+   ============================================================ */
+function renderCmp(){
+  const gs=vG(),tgs=vT(),ctrl=gs.find(g=>g.type==='control'),mgs=vMG(),slcs=vSL();
+  const allM=mgs.flatMap(mg=>mg.ms);
+  if(!ctrl||!tgs.length||!allM.length)return'<div style="padding:48px;text-align:center;color:var(--text-faint);font-size:13px">Выберите группы и метрики для сравнения</div>';
+  const cols=1+allM.length;
+
+  // Legend at TOP
+  let h=`<div class="legend"><span class="legend__title">Группы:</span>`;
+  tgs.forEach(g=>h+=`<span class="legend__i"><span class="legend__dot" style="background:${g.color}"></span>${g.name}</span>`);
+  h+=`</div>`;
+
+  h+=`<div class="compact"><table class="tbl"><thead><tr><th class="tbl__mc"></th>`;
+  allM.forEach(m=>h+=`<th>${m.name}</th>`);
+  h+=`</tr></thead><tbody>`;
+
+  // Build delta cell with best/worst highlighting
+  function deltaCell(dataObj, tgs){
+    if(!dataObj)return `<td style="text-align:center;color:var(--text-faint)">—</td>`;
+    let deltas=tgs.map(g=>{const vl=dataObj[g.id];return vl?{g,d:vl.d}:null;}).filter(Boolean);
+    let bestD=-Infinity;
+    deltas.forEach(({d})=>{if(d>bestD)bestD=d;});
+    let avg=deltas.reduce((s,{d})=>s+d,0)/(deltas.length||1);
+    let hc=heatCls(avg);
+    let inner=deltas.map(({g,d})=>{
+      let extra='';
+      if(deltas.length>1&&d===bestD)extra=' dt--best';
+      return `<span class="dt dt--${dc(d)}${extra}"><span class="dt__dot" style="background:${g.color}"></span>${fd(d)}</span>`;
+    }).join('');
+    return `<td class="${hc}"><span class="dts">${inner}</span></td>`;
+  }
+
+  // Overall
+  h+=`<tr class="tbl__mr" style="background:var(--surface-muted)"><td style="font-weight:600">Общие</td>`;
+  allM.forEach(m=>h+=deltaCell(m.v,tgs));
+  h+=`</tr>`;
+
+  // Slices
+  slcs.forEach(sl=>{
+    h+=`<tr class="tbl__gh"><td colspan="${cols}">${sl.name}</td></tr>`;
+    sl.ch.forEach(ch=>{
+      if(!S.slices.has(ch.id)&&!S.slices.has('__all')&&!S.slices.has(sl.id))return;
+      h+=`<tr class="tbl__sc"><td>${ch.name}</td>`;
+      allM.forEach(m=>{
+        const sd=m.sv?.[sl.id]?.[ch.id];
+        h+=deltaCell(sd,tgs);
+      });
+      h+=`</tr>`;
+    });
+  });
+
+  h+=`</tbody></table></div>`;
+  return h;
+}
+
+/* ---- RENDER ALL ---- */
+function render(){
+  document.getElementById('tRoot').innerHTML=S.view==='compact'?renderCmp():renderStd();
+  renderStats();renderChips();
+}
+
+/* ---- INIT ---- */
+renderCBG();renderCBM();renderCBS();render();
+</script>
+</body>
+</html>
