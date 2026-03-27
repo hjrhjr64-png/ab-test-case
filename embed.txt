@@ -12,10 +12,7 @@
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
   font-family:'Jost',sans-serif;
-  font-weight:400;
-  color:#453f3c;
   background:#EDF2F8;
-  line-height:1;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   overflow-x:hidden;
@@ -52,6 +49,7 @@ a{text-decoration:none;color:inherit}
   --c-card-illust: #edf2f8;
   --c-tag-bg: #EDF2F8;
   width:100%;max-width:100vw;overflow-x:hidden;
+  line-height:1;color:#453f3c;font-weight:400;
 }
 
 /* ============================================================
