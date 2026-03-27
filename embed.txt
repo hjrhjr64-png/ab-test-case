@@ -1,12 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A/B-аналитика — Кейс портфолио</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-/* Reset scoped to our wrapper only — never touches Taptop elements */
-.ab-case *,.ab-case *::before,.ab-case *::after{box-sizing:border-box;margin:0;padding:0}
-.ab-case img{max-width:100%;display:block}
-.ab-case a{text-decoration:none;color:inherit}
+body{
+  font-family:'Jost',sans-serif;
+  background:#EDF2F8;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
 .ab-case{
   /* Design tokens — scoped to avoid :root conflicts */
   --fs-hero: clamp(32px, 4.167vw, 60px);
@@ -558,6 +570,8 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 .ab-case .hero-white{background:#ffffff!important}
 .ab-case .section-title{color:#272838!important;margin-bottom:clamp(20px,1.944vw,28px)!important}
 </style>
+</head>
+<body>
 <div class="ab-case">
 
 <!-- ============================================================
@@ -826,3 +840,5 @@ const countObs = new IntersectionObserver((entries) => {
 }, {threshold: 0.5});
 document.querySelectorAll('.stat-card__number').forEach(el => countObs.observe(el));
 </script>
+</body>
+</html>
