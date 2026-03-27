@@ -375,6 +375,16 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   flex:1;height:auto!important;overflow:visible;
 }
 .ab-case .prototype-wrap.proto-fs .prototype-footer{display:none}
+/* ESC button shown only in fullscreen */
+.ab-case .proto-esc-btn{
+  display:none;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.18);border:none;cursor:pointer;
+  color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;
+  padding:6px 12px;border-radius:8px;
+  transition:background 0.15s;white-space:nowrap;
+}
+.ab-case .proto-esc-btn:hover{background:rgba(255,255,255,0.3)}
+.ab-case .prototype-wrap.proto-fs .proto-esc-btn{display:flex}
 .ab-case .prototype-footer{
   background:#f9fafb;border-top:1px solid #eaecf0;
   height:clamp(44px, 3.472vw, 50px);
@@ -438,8 +448,8 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 .ab-case .stat-card__number--blue{color:#3049d5}
 .ab-case .stat-card__number--green{color:#2a9659}
 .ab-case .stat-card__number--purple{color:#5d3aff}
-.ab-case .stat-card__label{font-size:var(--fs-stat-title);color:var(--c-heading);line-height:1.2;margin-bottom:clamp(6px, 0.556vw, 8px)}
-.ab-case .stat-card__sub{font-size:var(--fs-stat-sub);color:var(--c-text);opacity:0.7;line-height:1.2}
+.ab-case .stat-card__label{font-size:var(--fs-body);font-weight:600;color:var(--c-heading);line-height:1.25;margin-bottom:clamp(4px, 0.417vw, 6px)}
+.ab-case .stat-card__sub{font-size:clamp(11px, 0.764vw, 12px);color:var(--c-text);opacity:0.6;line-height:1.3;letter-spacing:0.01em}
 
 /* ============================================================
    UX PRINCIPLES
@@ -464,7 +474,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   margin-bottom:clamp(8px, 0.556vw, 8px);
 }
 .ab-case .principle-card__desc{
-  font-size:var(--fs-principle-desc);color:var(--c-text);
+  font-size:var(--fs-body);color:var(--c-text);
   line-height:1.35;letter-spacing:-0.14px;margin-top:auto;
 }
 
@@ -705,6 +715,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
           </div>
           <span class="prototype-header__title">Потыкай сам</span>
         </div>
+        <button class="proto-esc-btn" aria-label="Выйти из полного экрана">✕ ESC</button>
         <span class="prototype-header__badge">Вайбкод 🥰</span>
       </div>
       <div class="prototype-body">
@@ -866,20 +877,26 @@ if(protoBody && protoFrame){
 
 // Prototype window controls
 (function(){
-  const wrap  = document.querySelector('.prototype-wrap');
-  const body  = document.querySelector('.prototype-body');
+  const wrap   = document.querySelector('.prototype-wrap');
+  const body   = document.querySelector('.prototype-body');
   const yellow = document.querySelector('.prototype-dot--yellow');
   const green  = document.querySelector('.prototype-dot--green');
+  const escBtn = document.querySelector('.proto-esc-btn');
   if(!wrap || !body || !yellow || !green) return;
 
   const naturalH = 'clamp(500px, 52.083vw, 750px)';
   let collapsed = false;
   let fullscreen = false;
 
+  function exitFullscreen(){
+    wrap.classList.remove('proto-fs');
+    document.documentElement.style.overflow = '';
+    fullscreen = false;
+  }
+
   yellow.addEventListener('click', () => {
-    if(fullscreen) return; // ignore while fullscreen
+    if(fullscreen) return;
     if(!collapsed){
-      // freeze current pixel height then animate to 0
       body.style.height = body.offsetHeight + 'px';
       requestAnimationFrame(() => { body.style.height = '0px'; });
       collapsed = true;
@@ -891,25 +908,20 @@ if(protoBody && protoFrame){
 
   green.addEventListener('click', () => {
     if(!fullscreen){
-      // restore height if collapsed
       if(collapsed){ body.style.height = naturalH; collapsed = false; }
       wrap.classList.add('proto-fs');
       document.documentElement.style.overflow = 'hidden';
       fullscreen = true;
     } else {
-      wrap.classList.remove('proto-fs');
-      document.documentElement.style.overflow = '';
-      fullscreen = false;
+      exitFullscreen();
     }
   });
 
-  // ESC exits fullscreen
+  if(escBtn) escBtn.addEventListener('click', exitFullscreen);
+
+  // ESC key — works when page (not iframe) has focus
   document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && fullscreen){
-      wrap.classList.remove('proto-fs');
-      document.documentElement.style.overflow = '';
-      fullscreen = false;
-    }
+    if(e.key === 'Escape' && fullscreen) exitFullscreen();
   });
 })();
 </script>
