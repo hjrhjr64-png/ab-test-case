@@ -382,16 +382,6 @@ a{text-decoration:none;color:inherit}
   flex:1;height:auto!important;overflow:visible;
 }
 .prototype-wrap.proto-fs .prototype-footer{display:none}
-/* ESC button shown only in fullscreen */
-.proto-esc-btn{
-  display:none;align-items:center;gap:6px;
-  background:rgba(255,255,255,0.18);border:none;cursor:pointer;
-  color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;
-  padding:6px 12px;border-radius:8px;
-  transition:background 0.15s;white-space:nowrap;
-}
-.proto-esc-btn:hover{background:rgba(255,255,255,0.3)}
-.prototype-wrap.proto-fs .proto-esc-btn{display:flex}
 .prototype-footer{
   background:#f9fafb;border-top:1px solid #eaecf0;
   height:clamp(44px, 3.472vw, 50px);
@@ -722,7 +712,6 @@ a{text-decoration:none;color:inherit}
           </div>
           <span class="prototype-header__title">Потыкай сам</span>
         </div>
-        <button class="proto-esc-btn" aria-label="Выйти из полного экрана">✕ ESC</button>
         <span class="prototype-header__badge">Вайбкод 🥰</span>
       </div>
       <div class="prototype-body">
@@ -888,7 +877,6 @@ if(protoBody && protoFrame){
   const body   = document.querySelector('.prototype-body');
   const yellow = document.querySelector('.prototype-dot--yellow');
   const green  = document.querySelector('.prototype-dot--green');
-  const escBtn = document.querySelector('.proto-esc-btn');
   if(!wrap || !body || !yellow || !green) return;
 
   const naturalH = 'clamp(500px, 52.083vw, 750px)';
@@ -923,8 +911,6 @@ if(protoBody && protoFrame){
       exitFullscreen();
     }
   });
-
-  if(escBtn) escBtn.addEventListener('click', exitFullscreen);
 
   // ESC key — works when page (not iframe) has focus
   document.addEventListener('keydown', e => {
