@@ -2,10 +2,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-img{max-width:100%;display:block}
-a{text-decoration:none;color:inherit}
+/* Reset scoped to our wrapper only — never touches Taptop elements */
+.ab-case *,.ab-case *::before,.ab-case *::after{box-sizing:border-box;margin:0;padding:0}
+.ab-case img{max-width:100%;display:block}
+.ab-case a{text-decoration:none;color:inherit}
 .ab-case{
   /* Design tokens — scoped to avoid :root conflicts */
   --fs-hero: clamp(32px, 4.167vw, 60px);
