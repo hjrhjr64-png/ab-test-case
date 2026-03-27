@@ -535,10 +535,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   .ab-case .hero__tags{flex-wrap:wrap;gap:clamp(8px,1.302vw,10px)}
   .ab-case .problem-card{padding:clamp(28px,3.646vw,36px);min-height:clamp(180px,23.438vw,220px)}
   .ab-case .sol-card{min-height:auto}
-  .ab-case .section-title, .ab-case .hero__title, .ab-case .hero__desc{text-align:left}
-  .ab-case .section-desc{text-align:left;max-width:100%;margin-left:0;margin-right:0}
-  .ab-case .section-label{justify-content:flex-start}
-  .ab-case .hero__tags{justify-content:flex-start}
+  .ab-case .section-desc{max-width:100%;margin-left:0;margin-right:0}
 }
 
 @media(max-width:414px){
