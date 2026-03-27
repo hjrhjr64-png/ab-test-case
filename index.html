@@ -19,7 +19,7 @@ body{
 }
 img{max-width:100%;display:block}
 a{text-decoration:none;color:inherit}
-.page-wrap{
+.ab-case{
   /* Design tokens — scoped to avoid :root conflicts */
   --fs-hero: clamp(32px, 4.167vw, 60px);
   --fs-section: clamp(26px, 2.778vw, 40px);
@@ -467,11 +467,11 @@ a{text-decoration:none;color:inherit}
    RESPONSIVE
    ============================================================ */
 @media(min-width:1921px){
-  :root{--fs-hero:4.167vw;--fs-section:2.778vw;--fs-stat:5.139vw}
+  .ab-case{--fs-hero:4.167vw;--fs-section:2.778vw;--fs-stat:5.139vw}
 }
 
 @media(max-width:1024px){
-  :root{
+  .ab-case{
     --fs-hero:clamp(28px,4.688vw,48px);
     --fs-section:clamp(24px,3.516vw,36px);
     --fs-stat:clamp(36px,5vw,52px);
@@ -482,7 +482,7 @@ a{text-decoration:none;color:inherit}
 }
 
 @media(max-width:768px){
-  :root{
+  .ab-case{
     --fs-hero:clamp(28px,5.208vw,40px);
     --fs-section:clamp(22px,3.906vw,30px);
     --fs-stat:clamp(32px,5.5vw,42px);
@@ -527,7 +527,7 @@ a{text-decoration:none;color:inherit}
 }
 
 @media(max-width:414px){
-  :root{
+  .ab-case{
     --fs-hero:clamp(26px,7.246vw,30px);
     --fs-section:clamp(22px,5.797vw,24px);
     --fs-stat:clamp(28px,7.729vw,32px);
@@ -541,7 +541,7 @@ a{text-decoration:none;color:inherit}
 }
 
 @media(max-width:375px){
-  :root{
+  .ab-case{
     --fs-hero:clamp(24px,7.467vw,28px);
     --fs-section:clamp(20px,6.4vw,24px);
     --fs-stat:clamp(26px,8vw,30px);
@@ -549,7 +549,7 @@ a{text-decoration:none;color:inherit}
 }
 
 @media(max-width:320px){
-  :root{
+  .ab-case{
     --fs-hero:clamp(22px,8.125vw,26px);
     --fs-section:clamp(18px,6.875vw,22px);
     --fs-stat:clamp(24px,8.75vw,28px);
@@ -559,20 +559,20 @@ a{text-decoration:none;color:inherit}
 }
 
 /* ============================================================
-   TAPTOP EMBED ISOLATION — override CMS styles inside .page-wrap
+   TAPTOP EMBED ISOLATION — override CMS styles inside .ab-case
    ============================================================ */
-.page-wrap img{filter:none!important;-webkit-filter:none!important;mix-blend-mode:normal!important;opacity:1!important}
-.page-wrap .tag-pill{background:#EDF2F8!important;color:#453f3c!important;padding:clamp(16px,1.667vw,24px) clamp(24px,2.778vw,40px)!important;border-radius:clamp(10px,0.972vw,14px)!important}
-.page-wrap .tag-pill__label{color:#453f3c!important;opacity:.7!important}
-.page-wrap .tag-pill__value{color:#272838!important}
-.page-wrap .section{padding:var(--sp-section) 0!important;background:transparent!important}
-.page-wrap .container{max-width:calc(100vw - var(--sp-side)*2)!important;margin:0 auto!important;padding:0!important;background:transparent!important}
-.page-wrap .hero-white{background:#ffffff!important}
-.page-wrap .section-title{color:#272838!important;margin-bottom:clamp(20px,1.944vw,28px)!important}
+.ab-case img{filter:none!important;-webkit-filter:none!important;mix-blend-mode:normal!important;opacity:1!important}
+.ab-case .tag-pill{background:#EDF2F8!important;color:#453f3c!important;padding:clamp(16px,1.667vw,24px) clamp(24px,2.778vw,40px)!important;border-radius:clamp(10px,0.972vw,14px)!important}
+.ab-case .tag-pill__label{color:#453f3c!important;opacity:.7!important}
+.ab-case .tag-pill__value{color:#272838!important}
+.ab-case .section{padding:var(--sp-section) 0!important;background:transparent!important}
+.ab-case .container{max-width:calc(100vw - var(--sp-side)*2)!important;margin:0 auto!important;padding:0!important;background:transparent!important}
+.ab-case .hero-white{background:#ffffff!important}
+.ab-case .section-title{color:#272838!important;margin-bottom:clamp(20px,1.944vw,28px)!important}
 </style>
 </head>
 <body>
-<div class="page-wrap">
+<div class="ab-case">
 
 <!-- ============================================================
      HERO
@@ -806,7 +806,7 @@ a{text-decoration:none;color:inherit}
   </div>
 </section>
 
-</div><!-- /page-wrap -->
+</div><!-- /ab-case -->
 
 <script>
 // Intersection Observer for scroll reveals
