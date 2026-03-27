@@ -125,7 +125,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   background:var(--c-white);
   border-radius:clamp(48px, 5.556vw, 80px);
   width:100%;
-  padding:clamp(50px, 8.333vw, 120px) 0 clamp(60px, 4.167vw, 60px);
+  padding:clamp(50px, 8.333vw, 120px) 0 var(--sp-side);
   position:relative;
   z-index:1;
   overflow:hidden;
@@ -166,7 +166,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   letter-spacing:-0.16px;line-height:1;
 }
 .ab-case .laptop-wrap{
-  width:calc(100% - var(--sp-side));
+  width:calc(100% - var(--sp-side)*2);
   margin:0 auto;
   position:relative;z-index:2;
   animation:ab-scaleIn 1s 0.4s cubic-bezier(0.22,1,0.36,1) both;
@@ -464,9 +464,6 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   .ab-case{--fs-hero:4.167vw;--fs-section:2.778vw;--fs-stat:5.139vw}
 }
 
-@media(max-width:1200px){
-  .ab-case .laptop-wrap{width:calc(100% - var(--sp-side)*2)}
-}
 
 @media(max-width:1024px){
   .ab-case{
