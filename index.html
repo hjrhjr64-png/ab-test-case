@@ -40,7 +40,7 @@ a{text-decoration:none;color:inherit}
   --container: 88.889vw;
   --radius-card: clamp(20px, 2.222vw, 32px);
   --radius-illust: clamp(12px, 1.25vw, 18px);
-  --radius-pill: clamp(28px, 2.847vw, 41px);
+  --radius-pill: clamp(10px, 0.972vw, 14px);
   --c-bg: #EDF2F8;
   --c-white: #ffffff;
   --c-heading: #272838;
@@ -134,6 +134,7 @@ a{text-decoration:none;color:inherit}
   padding:clamp(50px, 8.333vw, 120px) 0 clamp(60px, 4.167vw, 60px);
   position:relative;
   z-index:1;
+  overflow:hidden;
 }
 .hero__title{
   font-size:var(--fs-hero);font-weight:800;color:var(--c-heading);
@@ -171,7 +172,7 @@ a{text-decoration:none;color:inherit}
   letter-spacing:-0.16px;line-height:1;
 }
 .laptop-wrap{
-  width:calc(100% - var(--sp-side)*2);
+  width:calc(100% - var(--sp-side));
   margin:0 auto;
   position:relative;z-index:2;
   animation:ab-scaleIn 1s 0.4s cubic-bezier(0.22,1,0.36,1) both;
@@ -556,6 +557,18 @@ a{text-decoration:none;color:inherit}
   }
   .principle-card{flex:0 0 clamp(180px,80vw,220px)}
 }
+
+/* ============================================================
+   TAPTOP EMBED ISOLATION — override CMS styles inside .page-wrap
+   ============================================================ */
+.page-wrap img{filter:none!important;-webkit-filter:none!important;mix-blend-mode:normal!important;opacity:1!important}
+.page-wrap .tag-pill{background:#EDF2F8!important;color:#453f3c!important;padding:clamp(16px,1.667vw,24px) clamp(24px,2.778vw,40px)!important;border-radius:clamp(10px,0.972vw,14px)!important}
+.page-wrap .tag-pill__label{color:#453f3c!important;opacity:.7!important}
+.page-wrap .tag-pill__value{color:#272838!important}
+.page-wrap .section{padding:var(--sp-section) 0!important;background:transparent!important}
+.page-wrap .container{max-width:calc(100vw - var(--sp-side)*2)!important;margin:0 auto!important;padding:0!important;background:transparent!important}
+.page-wrap .hero-white{background:#ffffff!important}
+.page-wrap .section-title{color:#272838!important;margin-bottom:clamp(20px,1.944vw,28px)!important}
 </style>
 </head>
 <body>
