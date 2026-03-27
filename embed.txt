@@ -172,7 +172,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   animation:ab-scaleIn 1s 0.4s cubic-bezier(0.22,1,0.36,1) both;
 }
 .ab-case .laptop-mockup{
-  width:100%;aspect-ratio:1280/708;border-radius:var(--radius-card);
+  width:100%;aspect-ratio:1280/708;border-radius:clamp(20px, 3.472vw, 50px);
   overflow:hidden;background:var(--c-card-illust);
 }
 .ab-case .laptop-mockup img{width:100%;height:100%;object-fit:cover}
@@ -535,7 +535,8 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   .ab-case .hero__tags{flex-wrap:wrap;gap:clamp(8px,1.302vw,10px)}
   .ab-case .problem-card{padding:clamp(28px,3.646vw,36px);min-height:clamp(180px,23.438vw,220px)}
   .ab-case .sol-card{min-height:auto}
-  .ab-case .section-title, .ab-case .section-desc, .ab-case .hero__title, .ab-case .hero__desc{text-align:left}
+  .ab-case .section-title, .ab-case .hero__title, .ab-case .hero__desc{text-align:left}
+  .ab-case .section-desc{text-align:left;max-width:100%;margin-left:0;margin-right:0}
   .ab-case .section-label{justify-content:flex-start}
   .ab-case .hero__tags{justify-content:flex-start}
 }
